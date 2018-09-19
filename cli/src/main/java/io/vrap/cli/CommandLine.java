@@ -61,7 +61,7 @@ public class CommandLine {
 
             final GeneratorConfigBuilder builder = new GeneratorConfigBuilder();
             try {
-                builder.ramlFileLocation(URI.createFileURI(apiFileLocation.getCanonicalPath()));
+                builder.genLanguage("scala").ramlFileLocation(URI.createFileURI(apiFileLocation.getCanonicalPath()));
 
             } catch (final IOException e) {
                 throw new RuntimeException(e);
