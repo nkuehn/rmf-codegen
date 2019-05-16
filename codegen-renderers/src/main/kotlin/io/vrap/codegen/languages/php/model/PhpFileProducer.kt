@@ -216,7 +216,9 @@ class PhpFileProducer @Inject constructor() : FileProducer {
                     |    "guzzlehttp/guzzle": "^6.0",
                     |    "psr/cache": "^1.0",
                     |    "psr/log": "^1.0",
-                    |    "cache/filesystem-adapter": "^1.0"
+                    |    "cache/filesystem-adapter": "^1.0",
+                    |    "jms/serializer" : "^2.0",
+                    |    "doctrine/collections": "^1.0"
                     |  },
                     |  "require-dev": {
                     |    "monolog/monolog": "^1.3",

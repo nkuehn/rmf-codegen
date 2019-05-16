@@ -16,7 +16,6 @@ interface  ObjectTypeExtensions : io.vrap.codegen.languages.ExtensionsBase {
         val result =  properties
                 .map { it.type }
                 //If the subtipes are in the same package they should be imported
-                .plus(this.namedSubTypes())
                 .plus(this.type)
                 .filterNotNull()
                 .map { vrapTypeProvider.doSwitch(it) }

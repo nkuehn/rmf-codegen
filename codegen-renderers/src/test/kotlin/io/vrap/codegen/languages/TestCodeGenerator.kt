@@ -31,9 +31,9 @@ import javax.tools.ToolProvider
 class TestCodeGenerator {
 
     companion object {
-        private val importApiPath : Path = Paths.get("../../commercetools-api-reference/api.raml")
-        private val platformApiPath : Path = Paths.get("../api-spec/api.raml")
-        val apiProvider: ApiProvider = ApiProvider(importApiPath)
+        private val platformApiPath : Path = Paths.get("../../commercetools-api-reference/api.raml")
+        private val importApiPath : Path = Paths.get("../api-spec/api.raml")
+        val apiProvider: ApiProvider = ApiProvider(platformApiPath)
         val generatorConfig = CodeGeneratorConfig(basePackageName = "com.commercetools.importer")
     }
 

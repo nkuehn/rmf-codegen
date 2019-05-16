@@ -3,6 +3,8 @@ package io.vrap.codegen.languages.php.model
 
 import com.google.inject.AbstractModule
 import com.google.inject.multibindings.Multibinder
+import io.vrap.codegen.languages.php.jms.JmsCollectionRenderer
+import io.vrap.codegen.languages.php.jms.JmsTypeRenderer
 import io.vrap.rmf.codegen.rendring.FileProducer
 import io.vrap.rmf.codegen.rendring.ObjectTypeRenderer
 import io.vrap.rmf.codegen.rendring.MethodRenderer
@@ -12,8 +14,12 @@ class PhpModelModule: AbstractModule() {
     override fun configure() {
         val objectTypeBinder = Multibinder.newSetBinder(binder(), ObjectTypeRenderer::class.java)
         objectTypeBinder.addBinding().to(PhpInterfaceObjectTypeRenderer::class.java)
+/*
         objectTypeBinder.addBinding().to(PhpObjectTypeRenderer::class.java)
         objectTypeBinder.addBinding().to(PhpCollectionRenderer::class.java)
+*/
+        objectTypeBinder.addBinding().to(JmsTypeRenderer::class.java)
+        objectTypeBinder.addBinding().to(JmsCollectionRenderer::class.java)
 
         val fileBinder = Multibinder.newSetBinder(binder(), FileProducer::class.java)
         fileBinder.addBinding().to(PhpFileProducer::class.java)
