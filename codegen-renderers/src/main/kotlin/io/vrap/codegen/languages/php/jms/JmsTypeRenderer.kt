@@ -82,7 +82,6 @@ class JmsTypeRenderer @Inject constructor(override val vrapTypeProvider: VrapTyp
             |}
             """.trimMargin()
         } else {
-//            | * @var ${if (this.type.toVrapType().isScalar() and (this.type.toVrapType() is VrapArrayType)) "array" else {"${this.type.toVrapType().simpleName()}"}} $${this.name}
             """
             |/**
             | * @var ${this.type.toVrapType().simpleName()} $${this.name}
@@ -110,7 +109,6 @@ class JmsTypeRenderer @Inject constructor(override val vrapTypeProvider: VrapTyp
                 |}
             """.trimMargin()
         } else {
-//                | * @return ${if (this.type.toVrapType().isScalar() and (this.type.toVrapType() is VrapArrayType)) "array" else {"${this.type.toVrapType().simpleName()}"}}
             """
                 |/**
                 | * @return ${this.type.toVrapType().simpleName()}
@@ -134,16 +132,24 @@ class JmsTypeRenderer @Inject constructor(override val vrapTypeProvider: VrapTyp
 
     fun Property.toPhpField(): String {
 
-        val typeName = when(this.type.toVrapType()) {
-            is VrapObjectType ->  "${this.type.toVrapType().fullClassName()}Model"
-            else -> this.type.toVrapType().fullClassName()
+        val toVrapType = this.type.toVrapType()
+        val typeName = when(toVrapType) {
+            is VrapObjectType ->  "${toVrapType.fullClassName()}Model"
+            is VrapArrayType -> {
+                if (toVrapType.itemType.isScalar()) {
+                    "array"
+                } else {
+                    toVrapType.fullClassName()
+                }
+            }
+            else -> toVrapType.fullClassName()
 
         }
-//            | * @var ${if (this.type.toVrapType().isScalar()) printScalarVar else this.type.toVrapType().simpleName()}
+
         return """
             |/**
             | * @Type("${typeName.escapeAll()}")
-            | * @var ${this.type.toVrapType().simpleName()}
+            | * @var ${toVrapType.simpleName()}
             | */
             |protected $${this.name};
         """.trimMargin();

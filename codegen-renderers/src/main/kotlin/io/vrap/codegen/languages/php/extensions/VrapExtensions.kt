@@ -50,7 +50,7 @@ fun VrapType.fullClassName() : String {
     }
 }
 
-fun scalarTypes():Array<String> { return arrayOf("string", "int", "float", "bool", "array") }
+fun scalarTypes():Array<String> { return arrayOf("string", "int", "float", "bool", "array", "stdClass") }
 
 fun AnyType.isScalarProperty(): Boolean {
     return when(this) {
