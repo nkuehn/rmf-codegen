@@ -1,6 +1,12 @@
 package io.vrap.codegen.languages.php.model
 
 import com.damnhandy.uri.template.UriTemplate
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.module.SimpleModule
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import io.vrap.codegen.languages.php.PhpSubTemplates
@@ -10,7 +16,9 @@ import io.vrap.rmf.codegen.io.TemplateFile
 import io.vrap.rmf.codegen.rendring.FileProducer
 import io.vrap.rmf.codegen.rendring.utils.escapeAll
 import io.vrap.rmf.codegen.rendring.utils.keepIndentation
+import io.vrap.rmf.codegen.types.VrapTypeProvider
 import io.vrap.rmf.raml.model.modules.Api
+import io.vrap.rmf.raml.model.types.*
 import io.vrap.rmf.raml.model.util.StringCaseFormat
 
 class PhpFileProducer @Inject constructor() : FileProducer {
@@ -23,26 +31,88 @@ class PhpFileProducer @Inject constructor() : FileProducer {
     lateinit var api:Api
 
     override fun produceFiles(): List<TemplateFile> = listOf(
-            baseCollection(),
-            baseNullable(),
-            clientFactory(),
-            tokenProvider(),
-            token(),
-            composerJson(),
-            config(),
-            credentialTokenProvider(),
-            cachedProvider(),
-            rawTokenProvider(),
-            oauth2Handler(),
-            middlewareFactory(),
-            authConfig(),
-            clientCredentialsConfig(),
-            tokenModel(),
-            oauthHandlerFactory(),
-            baseException(),
-            invalidArgumentException(),
-            apiRequest()
+            apiJson()
+//            ,
+//            baseCollection(),
+//            baseNullable(),
+//            clientFactory(),
+//            tokenProvider(),
+//            token(),
+//            composerJson(),
+//            config(),
+//            credentialTokenProvider(),
+//            cachedProvider(),
+//            rawTokenProvider(),
+//            oauth2Handler(),
+//            middlewareFactory(),
+//            authConfig(),
+//            clientCredentialsConfig(),
+//            tokenModel(),
+//            oauthHandlerFactory(),
+//            baseException(),
+//            invalidArgumentException(),
+//            apiRequest()
     )
+
+    private fun apiJson(): TemplateFile {
+        val mapper = ObjectMapper()
+        val module = SimpleModule("RamlModule")
+
+        module.addSerializer(Api::class.java, object : JsonSerializer<Api>() {
+            override fun serialize(v: Api, g: JsonGenerator, serializers: SerializerProvider) {
+                g.writeStartObject();
+                g.writeStringField("title", v.title)
+                serializers.defaultSerializeField("types", v.types, g)
+                g.writeEndObject();
+            }
+        })
+        module.addSerializer(Property::class.java, object : JsonSerializer<Property>() {
+            override fun serialize(v: Property, g: JsonGenerator, serializers: SerializerProvider) {
+                g.writeStartObject();
+                g.writeStringField("name", v.name?.toString())
+                val type = v.type
+                g.writeStringField("displayName", v.name?.toString())
+                g.writeStringField("type", type?.name)
+                when(type) {
+                    is ArrayType -> if ( type.items?.name != null) {
+                        g.writeStringField("items", type.items.name)
+                    }
+                }
+                g.writeBooleanField("required", v.required)
+                g.writeEndObject();
+            }
+        })
+        module.addSerializer(AnyType::class.java, object : JsonSerializer<AnyType>() {
+            override fun serialize(v: AnyType, g: JsonGenerator, serializers: SerializerProvider) {
+                g.writeStartObject();
+                g.writeStringField("name", v.name?.toString())
+                g.writeStringField("displayName", v.displayName?.value)
+                g.writeStringField("type", v.type?.name)
+                when(v) {
+                    is ObjectType -> {
+                        serializers.defaultSerializeField("properties", v.properties, g)
+                    }
+                    is ArrayType -> if ( v.items?.name != null) {
+                        g.writeStringField("items", v.items.name)
+                    }
+                }
+                g.writeFieldName("default")
+                serializers.defaultSerializeValue(v.default, g);
+
+
+                g.writeEndObject();
+            }
+        })
+        mapper.registerModule(module);
+
+        val writer = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(api)
+
+        return TemplateFile(relativePath = "src/api.json",
+                content = """
+                        |${writer}
+                    """.trimMargin()
+        )
+    }
 
     private fun baseCollection(): TemplateFile {
         return TemplateFile(relativePath = "src/Base/Collection.php",
